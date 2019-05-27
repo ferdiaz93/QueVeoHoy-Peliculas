@@ -19,7 +19,7 @@ body:before {
 	position: relative;
 	margin: auto;
 	top: 40px;
-	background: url(../img/logo_acamica.png);
+	/* background: url(../img/logo_acamica.png); */
 	background-size: 132px 27px;
 }
 

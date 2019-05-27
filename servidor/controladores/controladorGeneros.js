@@ -2,9 +2,9 @@ const con = require("../lib/conexionbd");
 
 function obtenerGeneros(req, res) {
 
-  let sql = "SELECT * FROM genero";
+  let pedidoSql = "SELECT * FROM genero";
 
-  con.query(sql, (error, result) => {
+  con.query(pedidoSql, (error, result) => {
     if (error) res.send(error);
 
     const response = {

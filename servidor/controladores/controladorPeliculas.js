@@ -3,7 +3,7 @@ const con = require("../lib/conexionbd");
 function obtenerPeliculas(req, res) {
 
   // Pedido base
-  let sql = "SELECT *, (contador) FROM pelicula";
+  let pedidoSql = "SELECT *, (contador) FROM pelicula";
 
   // Se inicializa el array que va a contener los filtros
   const filtros = [];
@@ -15,29 +15,29 @@ function obtenerPeliculas(req, res) {
 
   // Si se pasaron filtros, estos son concatenados al pedido
   if (filtros.length) {
-    sql += " WHERE ";
+    pedidoSql += " WHERE ";
     for (let i = 0; i < filtros.length; i++) {
-      sql += filtros[i];
+      pedidoSql += filtros[i];
 
       // Si NO es el último, se prepara para concatenar el siguiente
       if (i < filtros.length - 1) {
-        sql += " AND ";
+        pedidoSql += " AND ";
       }
     }
   }
 
   // Se genera la sub-query contador y se inserta dentro de la query final
-  let contador =  '(' + sql.replace('*, (contador)', 'COUNT(id)') + ') AS total';
-  sql = sql.replace('(contador)', contador);
+  let contador =  '(' + pedidoSql.replace('*, (contador)', 'COUNT(id)') + ') AS total';
+  pedidoSql = pedidoSql.replace('(contador)', contador);
 
   // Se agregan el orden y el limite al pedido
   let orden = ` ORDER BY ${req.query.columna_orden} ${req.query.tipo_orden}`;
-  sql += orden;
+  pedidoSql += orden;
   let limite = ` LIMIT ${(req.query.pagina - 1) * req.query.cantidad}, ${req.query.cantidad}`;
-  sql += limite;
+  pedidoSql += limite;
 
   // Se envía la query
-  con.query(sql, (error, result) => {
+  con.query(pedidoSql, (error, result) => {
     if (error) res.send(error);
 
     const response = {
@@ -49,25 +49,27 @@ function obtenerPeliculas(req, res) {
   });
 };
 
+
+//funcione que hace el pedido de la informacion completa de las peliculas
 function obtenerInfoPelicula(req, res) {
 
   const id = req.params.id;
 
-  let sql = 'SELECT pelicula.*, genero.nombre FROM pelicula '
+  let pedidoSql = 'SELECT pelicula.*, genero.nombre FROM pelicula '
   + 'JOIN genero ON pelicula.genero_id = genero.id '
   + 'WHERE pelicula.id = ' + id;
 
-  con.query(sql, (error, result) => {
+  con.query(pedidoSql, (error, result) => {
     if(error) res.send(error);
 
     const pelicula = result[0];
     const genero = result[0].nombre;
 
-    sql = 'SELECT actor.nombre FROM actor '
+    pedidoSql = 'SELECT actor.nombre FROM actor '
     + 'JOIN actor_pelicula ON actor.id = actor_pelicula.actor_id '
     + 'WHERE actor_pelicula.pelicula_id = ' + id;
 
-    con.query(sql, (error, result) => {
+    con.query(pedidoSql, (error, result) => {
       if (error) res.send(error);
 
       const actores = result.map(element => element.nombre);
@@ -83,10 +85,12 @@ function obtenerInfoPelicula(req, res) {
   });
 };
 
+
+//funcion que hace el pedido de una pelicula
 function recomendarPelicula(req, res) {
 
   // Pedido base
-  let sql = 'SELECT pelicula.*, genero.nombre FROM pelicula JOIN genero ON pelicula.genero_id = genero.id';
+  let pedidoSql = 'SELECT pelicula.*, genero.nombre FROM pelicula JOIN genero ON pelicula.genero_id = genero.id';
 
   // Se inicializa el array que va a contener los filtros
   const filtros = []
@@ -99,18 +103,18 @@ function recomendarPelicula(req, res) {
 
   // Si se pasaron filtros, estos son concatenados al pedido
   if (filtros.length) {
-    sql = sql.concat(" WHERE ");
+    pedidoSql = pedidoSql.concat(" WHERE ");
     for (let i = 0; i < filtros.length; i++) {
-      sql = sql.concat(filtros[i]);
+      pedidoSql = pedidoSql.concat(filtros[i]);
 
       // Si NO es el último, se prepara para concatenar el siguiente
       if (i < filtros.length - 1) {
-        sql = sql.concat(" AND ");
+        pedidoSql = pedidoSql.concat(" AND ");
       }
     }
   }
 
-  con.query(sql, (error, result) => {
+  con.query(pedidoSql, (error, result) => {
     if (error) res.send(error);
 
     let response = {
